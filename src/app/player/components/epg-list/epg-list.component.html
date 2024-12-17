@@ -1,0 +1,105 @@
+@let items = filteredItems$ | async;
+@let timeshiftUntil = timeshiftUntil$ | async;
+
+<!-- channel info panel -->
+<div id="channel-header" color="primary">
+    <div class="channel-info">
+        <div class="channel-icon">
+            @if (channel?.icon) {
+                <img [src]="channel.icon" width="48" />
+            }
+        </div>
+        <div class="channel-details">
+            <div class="channel-name">
+                {{ channel?.name }}
+            </div>
+            <div class="program-name">
+                {{
+                    playingNow
+                        ? playingNow.title
+                        : ('EPG.LIVE_STREAM' | translate)
+                }}
+            </div>
+        </div>
+    </div>
+    <mat-divider />
+    <div id="date-navigator">
+        <button
+            class="previous-day"
+            mat-icon-button
+            (click)="changeDate('prev')"
+            [matTooltip]="'EPG.PREVIOUS_DAY' | translate"
+        >
+            <mat-icon>chevron_left</mat-icon>
+        </button>
+        <span class="selected-date">
+            {{ dateToday | momentDate: 'YYYY-MM-DD' : 'MMMM Do, dddd' }}</span
+        >
+        <button
+            class="next-day"
+            mat-icon-button
+            (click)="changeDate('next')"
+            [matTooltip]="'EPG.NEXT_DAY' | translate"
+        >
+            <mat-icon>chevron_right</mat-icon>
+        </button>
+    </div>
+</div>
+<mat-divider />
+
+@if (timeshiftUntil) {
+    <!-- program list -->
+    <mat-selection-list
+        id="program-list"
+        [multiple]="false"
+        hideSingleSelectionIndicator="true"
+    >
+        @if (items?.length > 0) {
+            @for (program of items; track program) {
+                @if (
+                    program.start < timeshiftUntil || program.start >= timeNow
+                ) {
+                    <mat-list-option>
+                        <div matListItemLine>
+                            <app-epg-list-item
+                                [timeshiftUntil]="timeshiftUntil"
+                                [timeNow]="timeNow"
+                                [item]="program"
+                            />
+                        </div>
+                        <p matListItemLine>{{ program?.title }}</p>
+                    </mat-list-option>
+                } @else {
+                    <mat-list-option
+                        [value]="program"
+                        [class.active]="
+                            timeNow >= program.start && timeNow <= program.stop
+                        "
+                        (click)="
+                            setEpgProgram(
+                                program,
+                                timeNow >= program.start &&
+                                    timeNow <= program.stop,
+                                program.start > timeshiftUntil
+                            )
+                        "
+                    >
+                        <div matListItemLine>
+                            <app-epg-list-item
+                                [timeshiftUntil]="timeshiftUntil"
+                                [timeNow]="timeNow"
+                                [item]="program"
+                            />
+                        </div>
+                        <p matListItemLine [innerHTML]="program.title"></p>
+                    </mat-list-option>
+                }
+                <mat-divider />
+            }
+        } @else {
+            <p class="epg-not-available">
+                {{ 'EPG.EPG_NOT_AVAILABLE_DATE' | translate }}
+            </p>
+        }
+    </mat-selection-list>
+}

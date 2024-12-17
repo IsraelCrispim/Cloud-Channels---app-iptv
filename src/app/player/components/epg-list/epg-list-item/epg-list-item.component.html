@@ -1,0 +1,28 @@
+<span class="time"
+    >{{ item.start | momentDate: 'YYYYMMDDHHmm ZZ' : 'HH:mm' }}
+    -
+    {{ item.stop | momentDate: 'YYYYMMDDHHmm ZZ' : 'HH:mm' }}</span
+>
+@if (timeNow >= item.start && timeNow <= item.stop) {
+    <span class="live badge" [matTooltip]="'EPG.LIVE_NOW' | translate"
+        >live</span
+    >
+}
+
+@if (
+    item.start < timeNow && item.stop < timeNow && item.start > timeshiftUntil
+) {
+    <span class="rec badge" [matTooltip]="'EPG.TIMESHIFT_AVAILABLE' | translate"
+        >r</span
+    >
+}
+
+@if (item.desc?.length > 0) {
+    <span
+        (click)="$event.stopPropagation(); showDescription(item)"
+        matListItemMeta
+        class="description-icon"
+        [matTooltip]="'EPG.PROGRAM_DIALOG.SHOW_PROGRAM_DETAILS' | translate"
+        ><mat-icon>info</mat-icon></span
+    >
+}
